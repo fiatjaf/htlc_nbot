@@ -80,12 +80,20 @@ func main() {
 			} else if htlc.Channel.NodeB != "" && htlc.Channel.NodeA == "" {
 				content += fmt.Sprintf("channel from '%s': ", htlc.Channel.NodeB)
 			} else {
-				content += fmt.Sprintf("a private channel from a mobile wallet: ")
+				content += fmt.Sprintf("a private channel (from a mobile wallet?): ")
 			}
 			content += fmt.Sprintf("https://mempool.space/tx/%s/", htlc.TxID)
 
 			if htlc.Fee > htlc.Amount {
 				content += fmt.Sprintf("\n\nsomeone lost their channel, their entire payment and had to send %s sats more to the gods of lightning for the privilege", comma(htlc.Fee-htlc.Amount))
+				times := (htlc.Fee - htlc.Amount) / htlc.Amount
+				if times > 1 {
+					content += ", "
+					if htlc.Fee*(times+1) != htlc.Amount {
+						content += "over "
+					}
+					content += fmt.Sprintf("%dx the actual value of the HTLC", times)
+				}
 			} else if htlc.Fee == htlc.Amount {
 				content += "so they basically sacrificed their channel for nothing"
 			} else {
