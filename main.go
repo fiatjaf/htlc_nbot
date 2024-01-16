@@ -44,6 +44,9 @@ func main() {
 		}
 	}
 
+	pubkey, _ := nostr.GetPublicKey(s.SecretKey)
+	log.Info().Str("pubkey", pubkey).Str("relay", s.RelayURL).Msg("starting")
+
 	for height := lastBlockInspected; ; height++ {
 		os.WriteFile("_last_block", []byte(strconv.Itoa(height)), 0644)
 
