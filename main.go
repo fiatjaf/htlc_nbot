@@ -56,22 +56,14 @@ func main() {
 			return
 		}
 		for _, htlc := range htlcs {
-			if htlc.Amount > 9_000 {
-				// for big htlcs we will accept non-negative closures as horrible
-				if htlc.Fee < htlc.Amount*2/3 {
-					continue
-				}
+			var content string
+			if htlc.TotalHTLCs == 1 {
+				content += fmt.Sprintf("an #htlc was worth %s sats, but it ", comma(htlc.Amount))
 			} else {
-				// otherwise only negative closures
-				if htlc.Fee < htlc.Amount {
-					continue
-				}
+				content += fmt.Sprintf("a multiple of %d htlcs totaling %s sats ", htlc.TotalHTLCs, comma(htlc.Amount))
 			}
+			content += fmt.Sprintf("costed %s sats to redeem in ", comma(htlc.Fee))
 
-			content := fmt.Sprintf(
-				"an #htlc was worth %s sats, but it costed %s sats to redeem in ",
-				comma(htlc.Amount), comma(htlc.Fee),
-			)
 			if htlc.Channel.NodeA != "" && htlc.Channel.NodeB != "" {
 				content += fmt.Sprintf("channel between '%s' and '%s': ",
 					htlc.Channel.NodeA, htlc.Channel.NodeB)

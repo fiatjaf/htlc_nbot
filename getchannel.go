@@ -24,28 +24,30 @@ type ChannelResponseOutput struct {
 }
 
 type Channel struct {
+	TxID     string
 	NodeA    string
 	NodeB    string
 	Capacity int64
+	IsMulti  bool
 }
 
 var emptyChannelData = fmt.Errorf("empty channel data")
 
-func getChannel(txid string) (ch Channel, err error) {
+func getChannel(txid string, ch *Channel) error {
 	w, err := http.Get("https://mempool.space/api/v1/lightning/channels/txids?txId[]=" + txid)
 	if err != nil {
-		return ch, err
+		return err
 	}
 	defer w.Body.Close()
 	wb, err := io.ReadAll(w.Body)
 	if err != nil {
-		return ch, err
+		return err
 	}
 
 	var res []ChannelResponse
 	err = json.Unmarshal(wb, &res)
 	if err != nil {
-		return ch, err
+		return err
 	}
 
 	var output *ChannelResponseOutput
@@ -54,7 +56,7 @@ func getChannel(txid string) (ch Channel, err error) {
 		break
 	}
 	if output == nil {
-		return ch, emptyChannelData
+		return emptyChannelData
 	}
 
 	ch.Capacity = output.Capacity
@@ -66,5 +68,6 @@ func getChannel(txid string) (ch Channel, err error) {
 	if ch.NodeB == "" {
 		ch.NodeB = output.NodeRight.PublicKey[0:6]
 	}
-	return ch, nil
+
+	return nil
 }
