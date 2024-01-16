@@ -20,7 +20,7 @@ var (
 
 type Settings struct {
 	SecretKey string `envconfig:"SECRET_KEY"`
-	RelayURL  string `envconfig:"RELAY_URL" default:"wss://fiatjaf.nostr1.com"`
+	RelayURL  string `envconfig:"RELAY_URL"`
 }
 
 func main() {
@@ -105,19 +105,21 @@ func main() {
 
 			fmt.Println(event)
 
-			relay, err := nostr.RelayConnect(context.Background(), s.RelayURL)
-			if err != nil {
-				log.Fatal().Err(err).Msg("failed to connect")
-				return
-			}
+			if s.RelayURL != "" {
+				relay, err := nostr.RelayConnect(context.Background(), s.RelayURL)
+				if err != nil {
+					log.Fatal().Err(err).Msg("failed to connect")
+					return
+				}
 
-			if _, err := relay.Publish(context.Background(), event); err != nil {
-				log.Fatal().Err(err).Msg("failed to publish")
-				return
-			}
+				if _, err := relay.Publish(context.Background(), event); err != nil {
+					log.Fatal().Err(err).Msg("failed to publish")
+					return
+				}
 
-			nevent, _ := nip19.EncodeEvent(event.ID, []string{s.RelayURL}, "")
-			fmt.Println("https://njump.me/" + nevent)
+				nevent, _ := nip19.EncodeEvent(event.ID, []string{s.RelayURL}, "")
+				fmt.Println("https://njump.me/" + nevent)
+			}
 		}
 	}
 }
