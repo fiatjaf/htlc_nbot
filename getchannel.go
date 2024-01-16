@@ -3,21 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
 type ChannelResponse struct {
-	Outputs struct {
-		First   *ChannelResponseOutput `json:"0"`
-		Second  *ChannelResponseOutput `json:"1"`
-		Third   *ChannelResponseOutput `json:"2"`
-		Fourth  *ChannelResponseOutput `json:"3"`
-		Fifth   *ChannelResponseOutput `json:"4"`
-		Sixth   *ChannelResponseOutput `json:"5"`
-		Seventh *ChannelResponseOutput `json:"6"`
-		Eighth  *ChannelResponseOutput `json:"7"`
-		Nineth  *ChannelResponseOutput `json:"8"`
-	} `json:"outputs"`
+	Outputs map[string]*ChannelResponseOutput `json:"outputs"`
 }
 
 type ChannelResponseOutput struct {
@@ -38,46 +29,32 @@ type Channel struct {
 	Capacity int64
 }
 
+var emptyChannelData = fmt.Errorf("empty channel data")
+
 func getChannel(txid string) (ch Channel, err error) {
 	w, err := http.Get("https://mempool.space/api/v1/lightning/channels/txids?txId[]=" + txid)
 	if err != nil {
 		return ch, err
 	}
 	defer w.Body.Close()
-
-	var res []ChannelResponse
-	err = json.NewDecoder(w.Body).Decode(&res)
+	wb, err := io.ReadAll(w.Body)
 	if err != nil {
 		return ch, err
 	}
 
-	output := res[0].Outputs.First
+	var res []ChannelResponse
+	err = json.Unmarshal(wb, &res)
+	if err != nil {
+		return ch, err
+	}
+
+	var output *ChannelResponseOutput
+	for _, o := range res[0].Outputs {
+		output = o
+		break
+	}
 	if output == nil {
-		output = res[0].Outputs.Second
-		if output == nil {
-			output = res[0].Outputs.Third
-			if output == nil {
-				output = res[0].Outputs.Fourth
-				if output == nil {
-					output = res[0].Outputs.Fifth
-					if output == nil {
-						output = res[0].Outputs.Sixth
-						if output == nil {
-							output = res[0].Outputs.Seventh
-							if output == nil {
-								output = res[0].Outputs.Eighth
-								if output == nil {
-									output = res[0].Outputs.Nineth
-									if output == nil {
-										return ch, fmt.Errorf("channel output is not in the first 9, so we gave up because the mempool.space api is crazy")
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+		return ch, emptyChannelData
 	}
 
 	ch.Capacity = output.Capacity

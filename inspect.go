@@ -53,7 +53,7 @@ func inspectBlock(n int) (nostr.Timestamp, []HTLC, error) {
 					strings.HasPrefix(script[161:], "OP_SWAP OP_SIZE 20 OP_EQUAL OP_NOTIF OP_DROP 2 OP_SWAP") {
 					// it's an htlc! get the inputs to this transaction so we can calculate the fee
 					htlc := HTLC{TxID: tx.TxHash().String()}
-					for _, _inp := range tx.TxIn {
+					for _i, _inp := range tx.TxIn {
 						txid := _inp.PreviousOutPoint.Hash.String()
 						prevTx, err := getTransaction(txid)
 						if err != nil {
@@ -67,7 +67,8 @@ func inspectBlock(n int) (nostr.Timestamp, []HTLC, error) {
 							htlc.Amount = inputValue
 							htlc.Channel, err = getChannel(prevTx.Vin[0].TXID)
 							if err != nil {
-								fmt.Println(err)
+								log.Warn().Err(err).Str("htlc", htlc.TxID).Str("funding", prevTx.Vin[0].TXID).
+									Int("input", _i).Msg("error getting channel data, proceeding with nothing")
 							}
 						}
 					}
@@ -77,7 +78,7 @@ func inspectBlock(n int) (nostr.Timestamp, []HTLC, error) {
 
 					htlcs = append(htlcs, htlc)
 
-					// then exit here (there can't be two HTLCs in the same tx)
+					// then exit here (assume for simplicity that there can't be two HTLCs in the same tx)
 					break
 				}
 			}
