@@ -85,11 +85,11 @@ func main() {
 			content += fmt.Sprintf("https://mempool.space/tx/%s/", htlc.TxID)
 
 			if htlc.Fee > htlc.Amount {
-				content += fmt.Sprintf("\n\nsomeone lost their entire payment and paid %s sats more to the gods of lightning for the privilege", comma(htlc.Fee-htlc.Amount))
+				content += fmt.Sprintf("\n\nsomeone lost their channel, their entire payment and had to send %s sats more to the gods of lightning for the privilege", comma(htlc.Fee-htlc.Amount))
 			} else if htlc.Fee == htlc.Amount {
-				content += "so they basically sacrificed their channel in order to gain nothing"
+				content += "so they basically sacrificed their channel for nothing"
 			} else {
-				content += fmt.Sprintf("\n\n so they probably lost a channel in order to recover just %s sats, gifting %d%% to the gods of lightning", comma(htlc.Amount-htlc.Fee), htlc.Fee*100/htlc.Amount)
+				content += fmt.Sprintf("\n\n someone lost a channel in order to recover just %s sats, gifting %d%% to the gods of lightning", comma(htlc.Amount-htlc.Fee), htlc.Fee*100/htlc.Amount)
 			}
 
 			// publish nostr event
