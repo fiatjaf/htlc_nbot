@@ -20,7 +20,7 @@ var (
 
 type Settings struct {
 	SecretKey string `envconfig:"SECRET_KEY"`
-	RelayURL  string `envconfig:"RELAY_URL" "wss://fiatjaf.nostr1.com"`
+	RelayURL  string `envconfig:"RELAY_URL" default:"wss://fiatjaf.nostr1.com"`
 }
 
 func main() {
@@ -86,7 +86,7 @@ func main() {
 			} else if htlc.Fee == htlc.Amount {
 				content += "so they basically sacrificed their channel in order to gain nothing"
 			} else {
-				content += fmt.Sprintf("\n\n so they probably lost a channel in order to recover just %s sats, gifting %d%% of this payment amount to the gods of lightning", comma(htlc.Amount-htlc.Fee), htlc.Fee*100/htlc.Amount)
+				content += fmt.Sprintf("\n\n so they probably lost a channel in order to recover just %s sats, gifting %d%% to the gods of lightning", comma(htlc.Amount-htlc.Fee), htlc.Fee*100/htlc.Amount)
 			}
 
 			// publish nostr event
