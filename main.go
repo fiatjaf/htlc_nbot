@@ -60,7 +60,7 @@ func main() {
 				}
 			} else {
 				// otherwise only negative closures
-				if htlc.Fee > htlc.Amount {
+				if htlc.Fee < htlc.Amount {
 					continue
 				}
 			}
