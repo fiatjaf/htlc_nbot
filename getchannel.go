@@ -15,6 +15,8 @@ type ChannelResponse struct {
 		Fifth   *ChannelResponseOutput `json:"4"`
 		Sixth   *ChannelResponseOutput `json:"5"`
 		Seventh *ChannelResponseOutput `json:"6"`
+		Eighth  *ChannelResponseOutput `json:"7"`
+		Nineth  *ChannelResponseOutput `json:"8"`
 	} `json:"outputs"`
 }
 
@@ -63,7 +65,13 @@ func getChannel(txid string) (ch Channel, err error) {
 						if output == nil {
 							output = res[0].Outputs.Seventh
 							if output == nil {
-								return ch, fmt.Errorf("channel output is not in the first 7, so we gave up because the mempool.space api is crazy")
+								output = res[0].Outputs.Eighth
+								if output == nil {
+									output = res[0].Outputs.Nineth
+									if output == nil {
+										return ch, fmt.Errorf("channel output is not in the first 9, so we gave up because the mempool.space api is crazy")
+									}
+								}
 							}
 						}
 					}
