@@ -21,10 +21,12 @@ type ChannelResponse struct {
 type ChannelResponseOutput struct {
 	Capacity int64 `json:"capacity"`
 	NodeLeft struct {
-		Alias string `json:"alias"`
+		Alias     string `json:"alias"`
+		PublicKey string `json:"public_key"`
 	} `json:"node_left"`
 	NodeRight struct {
-		Alias string `json:"alias"`
+		Alias     string `json:"alias"`
+		PublicKey string `json:"public_key"`
 	} `json:"node_right"`
 }
 
@@ -72,6 +74,12 @@ func getChannel(txid string) (ch Channel, err error) {
 
 	ch.Capacity = output.Capacity
 	ch.NodeA = output.NodeLeft.Alias
+	if ch.NodeA == "" {
+		ch.NodeA = output.NodeLeft.PublicKey[0:6]
+	}
 	ch.NodeB = output.NodeRight.Alias
+	if ch.NodeB == "" {
+		ch.NodeB = output.NodeRight.PublicKey[0:6]
+	}
 	return ch, nil
 }

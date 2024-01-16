@@ -76,11 +76,11 @@ func main() {
 				content += fmt.Sprintf("channel between '%s' and a '%s': ",
 					htlc.Channel.NodeA, htlc.Channel.NodeB)
 			} else if htlc.Channel.NodeA != "" && htlc.Channel.NodeB == "" {
-				content += fmt.Sprintf("channel between '%s' and a mobile wallet: ", htlc.Channel.NodeA)
+				content += fmt.Sprintf("channel from '%s': ", htlc.Channel.NodeA)
 			} else if htlc.Channel.NodeB != "" && htlc.Channel.NodeA == "" {
-				content += fmt.Sprintf("channel between '%s' and a mobile wallet: ", htlc.Channel.NodeB)
+				content += fmt.Sprintf("channel from '%s': ", htlc.Channel.NodeB)
 			} else {
-				// print nothing here and jump straight to the url
+				content += fmt.Sprintf("a private channel from a mobile wallet: ")
 			}
 			content += fmt.Sprintf("https://mempool.space/tx/%s/", htlc.TxID)
 
