@@ -13,10 +13,6 @@ import (
 	"github.com/rs/zerolog"
 )
 
-const (
-	RELAY_URL = "wss://fiatjaf.nostr1.com"
-)
-
 var (
 	s   Settings
 	log = zerolog.New(os.Stderr).Output(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
@@ -24,6 +20,7 @@ var (
 
 type Settings struct {
 	SecretKey string `envconfig:"SECRET_KEY"`
+	RelayURL  string `envconfig:"RELAY_URL" "wss://fiatjaf.nostr1.com"`
 }
 
 func main() {
@@ -105,7 +102,7 @@ func main() {
 
 			fmt.Println(event)
 
-			relay, err := nostr.RelayConnect(context.Background(), RELAY_URL)
+			relay, err := nostr.RelayConnect(context.Background(), s.RelayURL)
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to connect")
 				return
@@ -116,7 +113,7 @@ func main() {
 				return
 			}
 
-			nevent, _ := nip19.EncodeEvent(event.ID, []string{RELAY_URL}, "")
+			nevent, _ := nip19.EncodeEvent(event.ID, []string{s.RelayURL}, "")
 			fmt.Println("https://njump.me/" + nevent)
 		}
 	}
