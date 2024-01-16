@@ -65,12 +65,12 @@ func main() {
 			content += fmt.Sprintf("costed %s sats to redeem in ", comma(htlc.Fee))
 
 			if htlc.Channel.NodeA != "" && htlc.Channel.NodeB != "" {
-				content += fmt.Sprintf("channel between '%s' and '%s': ",
+				content += fmt.Sprintf("a channel between '%s' and '%s': ",
 					htlc.Channel.NodeA, htlc.Channel.NodeB)
 			} else if htlc.Channel.NodeA != "" && htlc.Channel.NodeB == "" {
-				content += fmt.Sprintf("channel from '%s': ", htlc.Channel.NodeA)
+				content += fmt.Sprintf("a channel from '%s': ", htlc.Channel.NodeA)
 			} else if htlc.Channel.NodeB != "" && htlc.Channel.NodeA == "" {
-				content += fmt.Sprintf("channel from '%s': ", htlc.Channel.NodeB)
+				content += fmt.Sprintf("a channel from '%s': ", htlc.Channel.NodeB)
 			} else {
 				content += fmt.Sprintf("a private channel (from a mobile wallet?): ")
 			}
