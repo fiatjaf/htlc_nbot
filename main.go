@@ -73,7 +73,7 @@ func main() {
 				comma(htlc.Amount), comma(htlc.Fee),
 			)
 			if htlc.Channel.NodeA != "" && htlc.Channel.NodeB != "" {
-				content += fmt.Sprintf("channel between '%s' and a '%s': ",
+				content += fmt.Sprintf("channel between '%s' and '%s': ",
 					htlc.Channel.NodeA, htlc.Channel.NodeB)
 			} else if htlc.Channel.NodeA != "" && htlc.Channel.NodeB == "" {
 				content += fmt.Sprintf("channel from '%s': ", htlc.Channel.NodeA)
