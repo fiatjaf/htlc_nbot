@@ -62,7 +62,7 @@ func main() {
 			} else {
 				content += fmt.Sprintf("a multiple of %d htlcs totaling %s sats ", htlc.TotalHTLCs, comma(htlc.Amount))
 			}
-			content += fmt.Sprintf("costed %s sats to redeem in ", comma(htlc.Fee))
+			content += fmt.Sprintf("cost %s sats to redeem in ", comma(htlc.Fee))
 
 			if htlc.Channel.NodeA != "" && htlc.Channel.NodeB != "" {
 				content += fmt.Sprintf("a channel between '%s' and '%s': ",
