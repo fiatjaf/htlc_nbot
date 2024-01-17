@@ -113,22 +113,24 @@ func inspectBlock(n int) (nostr.Timestamp, []HTLC, error) {
 				}
 
 				inputValue := prevTx.Vout[prevout.Index].Value
-				if prevout.IsHTLC {
-					htlc.Amount += inputValue // add all htlc amounts in a single sum in case of a batch sweep
-				}
 
 				htlc.Fee += inputValue // we'll add all the inputs to the fee total, then later subtract the outputs
+				if prevout.IsHTLC {
+					htlc.Amount += inputValue // add all htlc amounts in a single sum in case of a batch sweep
 
-				// set this channel funding txid here so we will fetch it later
-				channelFundingTx := prevTx.Vin[0].TXID
-				// unless we have already set
-				if htlc.Channel.TxID == "" {
-					htlc.Channel.TxID = channelFundingTx
-				} else if htlc.Channel.TxID != channelFundingTx {
-					// if we did and it was a different one, then we will unset it and mark the thing coming from "multiple channels"
-					// (this probably never happens)
-					htlc.Channel.TxID = ""
-					htlc.Channel.IsMulti = true
+					// set this channel funding txid here so we will fetch it later
+					channelFundingTx := prevTx.Vin[0].TXID
+					// unless we have already set
+					if htlc.Channel.TxID == "" {
+						fmt.Println("channel funding", channelFundingTx)
+						htlc.Channel.TxID = channelFundingTx
+					} else if htlc.Channel.TxID != channelFundingTx {
+						fmt.Println("is multi?", channelFundingTx)
+						// if we did and it was a different one, then we will unset it and mark the thing coming from "multiple channels"
+						// (this probably never happens)
+						htlc.Channel.TxID = ""
+						htlc.Channel.IsMulti = true
+					}
 				}
 			}
 
@@ -144,9 +146,11 @@ func inspectBlock(n int) (nostr.Timestamp, []HTLC, error) {
 			}
 
 			// this htlc is printable, so we are ready to fetch channel metadata
-			if err := getChannel(htlc.Channel.TxID, &htlc.Channel); err != nil {
-				log.Warn().Err(err).Str("htlc", htlc.TxID).Str("funding", htlc.Channel.TxID).
-					Msg("error getting channel data, proceeding with nothing")
+			if !htlc.Channel.IsMulti {
+				if err := getChannel(htlc.Channel.TxID, &htlc.Channel); err != nil {
+					log.Warn().Err(err).Str("htlc", htlc.TxID).Str("funding", htlc.Channel.TxID).
+						Msg("error getting channel data, proceeding with nothing")
+				}
 			}
 
 			htlcs = append(htlcs, htlc)
