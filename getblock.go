@@ -29,22 +29,23 @@ var current int
 func getBlock(height int) (*wire.MsgBlock, error) {
 	hash, err := getHash(height)
 	if err != nil {
-		return nil, fmt.Errorf("no hash for block %d", height)
+		return nil, fmt.Errorf("no hash for block %d: %w", height, err)
 	}
 
 	errs := make([]error, 0, 3)
 	for i := 0; i < len(blockFetchFunctions); i++ {
 		current++
-		fetchBlock := blockFetchFunctions[(i+current)%len(blockFetchFunctions)]
+		fnidx := (i + current) % len(blockFetchFunctions)
+		fetchBlock := blockFetchFunctions[fnidx]
 		rawBlock, err := fetchBlock(hash)
 		if err != nil {
-			errs = append(errs, err)
+			errs = append(errs, fmt.Errorf("failed to fetch from %d: %w", fnidx, err))
 			continue
 		}
 
 		block := &wire.MsgBlock{}
 		if err := block.Deserialize(bytes.NewReader(rawBlock)); err != nil {
-			errs = append(errs, err)
+			errs = append(errs, fmt.Errorf("failed to deserialize block from %d: %w", fnidx, err))
 			continue
 		}
 
@@ -55,35 +56,39 @@ func getBlock(height int) (*wire.MsgBlock, error) {
 }
 
 func getHash(height int) (hash string, err error) {
+	errs := make([]error, 0, len(esploras))
+
 	for _, endpoint := range esploras {
-		w, errW := http.Get(fmt.Sprintf(endpoint+"/block-height/%d", height))
-		if errW != nil {
-			err = errW
+		w, err := http.Get(fmt.Sprintf(endpoint+"/block-height/%d", height))
+		if err != nil {
+			errs = append(errs, fmt.Errorf("failed to get from %s", endpoint))
 			continue
 		}
 		defer w.Body.Close()
 
 		if w.StatusCode >= 404 {
+			errs = append(errs, fmt.Errorf("404 at %s", endpoint))
 			continue
 		}
 
-		data, errW := io.ReadAll(w.Body)
-		if errW != nil {
-			err = errW
+		data, err := io.ReadAll(w.Body)
+		if err != nil {
+			errs = append(errs, err)
 			continue
 		}
 
 		hash = strings.TrimSpace(string(data))
 
 		if len(hash) > 64 {
-			err = errors.New("got something that isn't a block hash: " + hash[:64])
+			err = fmt.Errorf("got something that isn't a block hash from %s: %s", endpoint, hash[:64])
+			errs = append(errs, err)
 			continue
 		}
 
 		return hash, nil
 	}
 
-	return "", err
+	return "", errors.Join(errs...)
 }
 
 func blockFromBlockchainInfo(hash string) ([]byte, error) {
@@ -95,8 +100,7 @@ func blockFromBlockchainInfo(hash string) ([]byte, error) {
 
 	block, _ := io.ReadAll(w.Body)
 	if len(block) < 100 {
-		// block not available here yet
-		return nil, nil
+		return nil, fmt.Errorf("block not available? %s", string(block))
 	}
 
 	blockbytes, err := hex.DecodeString(string(block))
@@ -140,13 +144,13 @@ func blockFromBlockchair(hash string) ([]byte, error) {
 }
 
 func blockFromEsplora(hash string) ([]byte, error) {
-	var err error
+	errs := make([]error, 0, len(esploras))
 	var block []byte
 
 	for _, endpoint := range esploras {
-		w, errW := http.Get(fmt.Sprintf(endpoint+"/block/%s/raw", hash))
-		if errW != nil {
-			err = errW
+		w, err := http.Get(fmt.Sprintf(endpoint+"/block/%s/raw", hash))
+		if err != nil {
+			errs = append(errs, fmt.Errorf("failed to get from %s: %w", endpoint, err))
 			continue
 		}
 
@@ -161,5 +165,5 @@ func blockFromEsplora(hash string) ([]byte, error) {
 		break
 	}
 
-	return block, err
+	return block, errors.Join(errs...)
 }

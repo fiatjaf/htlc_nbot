@@ -122,10 +122,8 @@ func inspectBlock(n int) (nostr.Timestamp, []HTLC, error) {
 					channelFundingTx := prevTx.Vin[0].TXID
 					// unless we have already set
 					if htlc.Channel.TxID == "" {
-						fmt.Println("channel funding", channelFundingTx)
 						htlc.Channel.TxID = channelFundingTx
 					} else if htlc.Channel.TxID != channelFundingTx {
-						fmt.Println("is multi?", channelFundingTx)
 						// if we did and it was a different one, then we will unset it and mark the thing coming from "multiple channels"
 						// (this probably never happens)
 						htlc.Channel.TxID = ""

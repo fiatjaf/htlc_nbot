@@ -1,4 +1,4 @@
-`htlc_nbot` is a Nostr bot that posts all HTLCs that costed a lot to redeem.
+`htlc_nbot` is a Nostr bot that posts all HTLCs that cost a lot to redeem.
 
 [![](chain-extender.jpg)](https://www.nogood.studio/portfolio/sovereign-electronics/)
 
